@@ -22,6 +22,8 @@ class User(db.Model):
     last_name = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.Text, nullable=False, default=DEFAULT_IMAGE_URL)
     
+    """Relationship with Post"""
+    posts = db.relationship("Post", backref="user", cascade="all, delete-orphan")
     @property
     def full_name(self):
         """Return full name of user."""
@@ -47,6 +49,26 @@ class Post(db.Model):
         """returns formated date"""
         return self.created_at.strftime("%a %b %-d  %Y, %-I:%M %p")
     
+class Tag(db.Model):
+    """Tags that can be added to a post"""
+    __tablename__= "tags"  
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text, unique=True, nullable=False)
+    
+    posts = db.relationship(
+        'Post',
+        secondary="posts_tags",
+        #cascade is equal to 'all,delete'
+        backref="tags",
+    )
+class PostTag(db.Model):
+    """Individuals tags on a post"""
+    
+    __tablename__ = "posts_tags"
+    
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), primary_key=True)    
 
 # connector function to connect this database to app.py
 def connect_db(app):
